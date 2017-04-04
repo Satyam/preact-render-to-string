@@ -102,104 +102,6 @@ function renderJsxToHtml(nodeName, attributes, opts, isSvgMode, isComponent) {
 	return s;
 }
 
-// function renderChildren(nodeName, children, context, opts, isSvgMode, hasLarge) {
-// 	let len = children && children.length,
-// 		pieces = [],
-// 		pretty = opts.pretty,
-// 		indentChar = typeof pretty==='string' ? pretty : '\t';
-//
-// 	for (let i=0; i<len; i++) {
-// 		let child = children[i];
-// 		if (!falsey(child)) {
-// 			let childSvgMode = nodeName==='svg' ? true : nodeName==='foreignObject' ? false : isSvgMode,
-// 				ret = renderToString(child, context, opts, true, childSvgMode);
-// 			if (!hasLarge && pretty && isLargeString(ret)) hasLarge = true;
-// 			pieces.push(ret);
-// 		}
-// 	}
-// 	if (hasLarge) {
-// 		for (let i=pieces.length; i--; ) {
-// 			pieces[i] = '\n' + indentChar + indent(pieces[i], indentChar);
-// 		}
-// 	}
-// 	return pieces;
-// }
-//
-// function renderComponent(vnode, context, opts) {
-// 	let nodeName = vnode.nodeName,
-// 		props = getNodeProps(vnode),
-// 		rendered;
-//
-// 	if (!nodeName.prototype || typeof nodeName.prototype.render!=='function') {
-// 		// stateless functional components
-// 		rendered = nodeName(props, context);
-// 	}
-// 	else {
-// 		// class-based components
-// 		let c = new nodeName(props, context);
-// 		c.props = props;
-// 		c.context = context;
-// 		if (c.componentWillMount) c.componentWillMount();
-// 		rendered = c.render(c.props, c.state, c.context);
-//
-// 		if (c.getChildContext) {
-// 			context = assign(assign({}, context), c.getChildContext());
-// 		}
-// 	}
-//
-// 	return renderToString(rendered, context, opts, opts.shallowHighOrder!==false);
-//
-// }
-//
-// /** The default export is an alias of `render()`. */
-// export default function renderToString(vnode, context, opts, inner, isSvgMode) {
-// 	let { nodeName, attributes, children } = vnode || EMPTY,
-// 		isComponent = false;
-// 	context = context || {};
-// 	opts = opts || {};
-//
-// 	let pretty = opts.pretty,
-// 		indentChar = typeof pretty==='string' ? pretty : '\t';
-//
-// 	if (vnode==null || vnode===false) {
-// 		return '';
-// 	}
-//
-// 	// #text nodes
-// 	if (!nodeName) {
-// 		return encodeEntities(vnode);
-// 	}
-//
-// 	// components
-// 	if (typeof nodeName==='function') {
-// 		isComponent = true;
-// 		if (opts.shallow && (inner || opts.renderRootComponent===false)) {
-// 			nodeName = getComponentName(nodeName);
-// 		}
-// 		else {
-// 			return renderComponent(vnode, context, opts);
-// 		}
-// 	}
-//
-// 	let s = renderJsxToHtml(nodeName, attributes, opts, isSvgMode, isComponent);
-//
-// 	const pieces = renderChildren(nodeName, children, context, opts, isSvgMode, ~s.indexOf('\n'));
-//
-// 	if (pieces.length) {
-// 		s += pieces.join('');
-// 	}
-// 	else if (opts && opts.xml) {
-// 		return s.substring(0, s.length-1) + ' />';
-// 	}
-//
-// 	if (opts.jsx || VOID_ELEMENTS.indexOf(nodeName)===-1) {
-// 		if (pretty && ~s.indexOf('\n')) s += '\n';
-// 		s += `</${nodeName}>`;
-// 	}
-//
-// 	return s;
-// }
-
 function renderChildren(nodeName, children, context, opts, isSvgMode, hasLarge) {
 	let len = children && children.length,
 		pieces = [],
@@ -237,7 +139,7 @@ function renderComponent(vnode, context, opts) {
 	let c = new nodeName(props, context),
 		promisedProps;
 	const doRender = newProps => {
-		if (newProps) c.props = assign(assign({}, c.props), newProps);
+		if (typeof newProps === 'object') c.props = assign(assign({}, c.props), newProps);
 
 		rendered = c.render(c.props, c.state, c.context);
 
