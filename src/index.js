@@ -1,4 +1,5 @@
 import { objectKeys, encodeEntities, falsey, memoize, indent, isLargeString, styleObjToCss, hashToClassName, assign, getNodeProps } from './util';
+import asyncRender from './async';
 
 const SHALLOW = { shallow: true };
 
@@ -230,10 +231,12 @@ function getFallbackComponentName(component) {
 	return name;
 }
 renderToString.shallowRender = shallowRender;
+renderToString.asyncRender = asyncRender;
 
 
 export {
 	renderToString as render,
 	renderToString,
-	shallowRender
+	shallowRender,
+	asyncRender
 };
