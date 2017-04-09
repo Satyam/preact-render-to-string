@@ -496,5 +496,9 @@ describe('Async render', () => {
 			return asyncRender(<Test hello="world">baaz</Test>, null, { sortAttributes:true })
 			.then(shouldBe('<div foo="bar" hello="world">baaz</div>'));
 		});
+		it('should render deep components', () => {
+			return asyncRender(<Test hello="world">baaz<Test this="that">xxx</Test>yyy</Test>, null, { sortAttributes:true })
+			.then(shouldBe('<div foo="bar" hello="world">baaz<div foo="bar" this="that">xxx</div>yyy</div>'));
+		});
 	});
 });
