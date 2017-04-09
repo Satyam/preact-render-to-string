@@ -103,12 +103,10 @@ function renderJsxToHtml(nodeName, attributes, opts, isSvgMode, isComponent) {
 }
 
 function renderChildren(nodeName, children, context, opts, isSvgMode, hasLarge) {
-	let len = children && children.length,
-		pieces = [],
-		pretty = opts.pretty,
+	const pretty = opts.pretty,
 		indentChar = typeof pretty==='string' ? pretty : '\t';
 
-	return Promise.all(children.map(child => {
+	return Promise.all((children || []).map(child => {
 		if (falsey(child)) return '\n';
 		let childSvgMode = nodeName==='svg' ? true : nodeName==='foreignObject' ? false : isSvgMode;
 		return asyncRender(child, context, opts, true, childSvgMode)
