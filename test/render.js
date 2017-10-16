@@ -1,7 +1,7 @@
 import { render, shallowRender } from '../src';
 import { h, Component } from 'preact';
 import chai, { expect } from 'chai';
-import { spy, match } from 'sinon';
+import { spy, stub, match } from 'sinon';
 import sinonChai from 'sinon-chai';
 chai.use(sinonChai);
 
@@ -12,6 +12,39 @@ describe('render', () => {
 				expected = `<div class="foo">bar</div>`;
 
 			expect(rendered).to.equal(expected);
+		});
+
+		describe('whitespace', () => {
+			it('should omit whitespace between elements', () => {
+				let children = [];
+				for (let i=0; i<1000; i++) {
+					children.push(Math.random()>.5 ? String(i) : h('x-'+String(i), null, i));
+				}
+				let rendered = render(
+					<div class="foo">
+						x
+						<a>a</a>
+						<b>b</b>
+						c
+						{children}
+						d
+					</div>
+				);
+
+				expect(rendered).not.to.contain(/\s/);
+			});
+
+			it('should not indent when attributes contain newlines', () => {
+				let rendered = render(
+					<div class={`foo\n\tbar\n\tbaz`}>
+						<a>a</a>
+						<b>b</b>
+						c
+					</div>
+				);
+
+				expect(rendered).to.equal(`<div class="foo\n\tbar\n\tbaz"><a>a</a><b>b</b>c</div>`);
+			});
 		});
 
 		it('should omit falsey attributes', () => {
@@ -465,6 +498,45 @@ describe('render', () => {
 
 		it('should exclude falsey attributes', () => {
 			expect(renderXml(<div foo={false} bar={0} />)).to.equal(`<div bar="0" />`);
+		});
+	});
+	
+	describe('state locking', () => {
+		it('should set _disable and __x to true', () => {
+			let inst;
+			class Foo extends Component {
+				constructor(props, context) {
+					super(props, context);
+					inst = this;
+				}
+				render() {
+					return <div />;
+				}
+			}
+			
+			expect(render(<Foo />)).to.equal('<div></div>');
+			
+			expect(inst).to.have.property('_disable', true);
+			expect(inst).to.have.property('__x', true);
+		});
+
+		it('should prevent re-rendering', () => {
+			const Bar = stub().returns(<div />);
+
+			let count = 0;
+
+			class Foo extends Component {
+				componentWillMount() {
+					this.forceUpdate();
+				}
+				render() {
+					return <Bar count={++count} />;
+				}
+			}
+			
+			expect(render(<Foo />)).to.equal('<div></div>');
+			
+			expect(Bar).to.have.been.calledOnce.and.calledWithMatch({ count: 1 });
 		});
 	});
 });

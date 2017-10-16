@@ -145,6 +145,19 @@ describe('jsx', () => {
 		`);
 	});
 
+	it('should skip null siblings', () => {
+		expect(renderJsx(
+			<jsx>
+				<span/>
+				{null}
+			</jsx>
+		)).to.deep.equal(dedent`
+			<jsx>
+				<span></span>
+			</jsx>
+		`);
+	});
+
 	it('should skip functions if functions=false', () => {
 		expect(renderJsx(
 			<div onClick={() => {}} />,
@@ -162,5 +175,13 @@ describe('jsx', () => {
 			<div onClick={function foo(){}} />,
 			{ functionNames:false }
 		)).to.equal('<div onClick={Function}></div>');
+	});
+
+	it('should render self-closing elements', () => {
+		expect(renderJsx(
+			<meta charset="utf-8" />
+		)).to.deep.equal(dedent`
+			<meta charset="utf-8" />
+		`);
 	});
 });

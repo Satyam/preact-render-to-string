@@ -59,12 +59,12 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 	let pretty = opts.pretty,
 		indentChar = typeof pretty==='string' ? pretty : '\t';
 
-	if (vnode==null || vnode===false) {
+	if (vnode==null || typeof vnode==='boolean') {
 		return '';
 	}
 
 	// #text nodes
-	if (!nodeName) {
+	if (typeof vnode!=='object' && !nodeName) {
 		return encodeEntities(vnode);
 	}
 
@@ -85,6 +85,8 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 			else {
 				// class-based components
 				let c = new nodeName(props, context);
+				// turn off stateful re-rendering:
+				c._disable = c.__x = true;
 				c.props = props;
 				c.context = context;
 				if (c.componentWillMount) c.componentWillMount();
@@ -155,7 +157,7 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 	// account for >1 multiline attribute
 	let sub = s.replace(/^\n\s*/, ' ');
 	if (sub!==s && !~sub.indexOf('\n')) s = sub;
-	else if (~s.indexOf('\n')) s += '\n';
+	else if (pretty && ~s.indexOf('\n')) s += '\n';
 
 	s = `<${nodeName}${s}>`;
 
@@ -180,10 +182,10 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 				let childSvgMode = nodeName==='svg' ? true : nodeName==='foreignObject' ? false : isSvgMode,
 					ret = renderToString(child, context, opts, true, childSvgMode);
 				if (!hasLarge && pretty && isLargeString(ret)) hasLarge = true;
-				pieces.push(ret);
+				if (ret) pieces.push(ret);
 			}
 		}
-		if (hasLarge) {
+		if (pretty && hasLarge) {
 			for (let i=pieces.length; i--; ) {
 				pieces[i] = '\n' + indentChar + indent(pieces[i], indentChar);
 			}
@@ -196,7 +198,7 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 		}
 	}
 
-	if (opts.jsx || VOID_ELEMENTS.indexOf(nodeName)===-1) {
+	if (VOID_ELEMENTS.indexOf(nodeName)===-1) {
 		if (pretty && ~s.indexOf('\n')) s += '\n';
 		s += `</${nodeName}>`;
 	}
@@ -205,9 +207,7 @@ export default function renderToString(vnode, context, opts, inner, isSvgMode) {
 }
 
 function getComponentName(component) {
-	let proto = component.prototype,
-		ctor = proto && proto.constructor;
-	return component.displayName || component.name || (proto && (proto.displayName || proto.name)) || getFallbackComponentName(component);
+	return component.displayName || component!==Function && component.name || getFallbackComponentName(component);
 }
 
 function getFallbackComponentName(component) {
